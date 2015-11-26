@@ -7,3 +7,10 @@
 *.sdf
 *.opensdf
 *.obj
+
+**\Debug
+**\Release
+**\x64
+**\x86
+**\obj
+**\Win32
