@@ -10,10 +10,9 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/opencv.hpp"
 
-
-
 using namespace std;
 using namespace cv;
+
 
 void load_image(const Mat& inimg, gSLICr::UChar4Image* outimg)
 {
@@ -46,15 +45,6 @@ void load_image(const gSLICr::UChar4Image* inimg, Mat& outimg)
 
 int main()
 {
-	VideoCapture cap(0);
-
-	if (!cap.isOpened()) 
-	{
-		cerr << "unable to open camera!\n";
-		return -1;
-	}
-	
-
 	// gSLICr settings
 	gSLICr::objects::settings my_settings;
 	my_settings.img_size.x = 640;
@@ -80,38 +70,22 @@ int main()
 
     StopWatchInterface *my_timer; sdkCreateTimer(&my_timer);
     
-	int key; int save_count = 0;
-	while (cap.read(oldFrame))
-	{
-		resize(oldFrame, frame, s);
-		
-		load_image(frame, in_img);
-        
-        sdkResetTimer(&my_timer); sdkStartTimer(&my_timer);
-		gSLICr_engine->Process_Frame(in_img);
-        sdkStopTimer(&my_timer); 
-        cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;
-        
-		gSLICr_engine->Draw_Segmentation_Result(out_img);
-		
-		load_image(out_img, boundry_draw_frame);
-		imshow("segmentation", boundry_draw_frame);
+    oldFrame = imread("photo.jpg");
+    resize(oldFrame, frame, s);
+	load_image(frame, in_img);
+    imshow("image", frame);
 
-		key = waitKey(1);
-		if (key == 27) break;
-		else if (key == 's')
-		{
-			char out_name[100];
-			sprintf(out_name, "seg_%04i.pgm", save_count);
-			gSLICr_engine->Write_Seg_Res_To_PGM(out_name);
-			sprintf(out_name, "edge_%04i.png", save_count);
-			imwrite(out_name, boundry_draw_frame);
-			sprintf(out_name, "img_%04i.png", save_count);
-			imwrite(out_name, frame);
-			printf("\nsaved segmentation %04i\n", save_count);
-			save_count++;
-		}
-	}
+    sdkResetTimer(&my_timer); sdkStartTimer(&my_timer);
+	gSLICr_engine->Process_Frame(in_img);
+    sdkStopTimer(&my_timer); 
+    cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;
+        
+	gSLICr_engine->Draw_Segmentation_Result(out_img);
+		
+	load_image(out_img, boundry_draw_frame);
+    imshow("segmentation", boundry_draw_frame);
+
+    waitKey(0);
 
 	destroyAllWindows();
     return 0;

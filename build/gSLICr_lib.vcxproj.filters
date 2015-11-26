@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_core_engine.cpp">
+      <Filter>engines</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_seg_engine.cpp">
+      <Filter>engines</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_core_engine.h">
+      <Filter>engines</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_seg_engine.h">
+      <Filter>engines</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_seg_engine_GPU.h">
+      <Filter>engines</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_seg_engine_shared.h">
+      <Filter>engines</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\objects\gSLICr_settings.h">
+      <Filter>engines</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\objects\gSLICr_spixel_info.h">
+      <Filter>engines</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\gSLICr_defines.h">
+      <Filter>engines</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\gSLICr.h">
+      <Filter>engines</Filter>
+    </ClInclude>
+    <ClInclude Include="D:\Git\gSLICr\NVTimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{2D59F410-7425-3127-AE85-BC39FF1AF995}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object Files">
+      <UniqueIdentifier>{3EECB822-C86A-32AA-A2C7-1DB0200CE557}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="engines">
+      <UniqueIdentifier>{52803B55-041C-32F1-AD56-D6AD34656D75}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\gSLICr_Lib\engines\gSLICr_seg_engine_GPU.cu">
+      <Filter>engines</Filter>
+    </CudaCompile>
+  </ItemGroup>
+</Project>
