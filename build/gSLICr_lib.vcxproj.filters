@@ -1,41 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_core_engine.cpp">
-      <Filter>engines</Filter>
-    </ClCompile>
-    <ClCompile Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_seg_engine.cpp">
-      <Filter>engines</Filter>
-    </ClCompile>
+    <ClCompile Include="..\gSLICr_Lib\engines\gSLICr_core_engine.cpp" />
+    <ClCompile Include="..\gSLICr_Lib\engines\gSLICr_seg_engine.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_core_engine.h">
-      <Filter>engines</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_seg_engine.h">
-      <Filter>engines</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_seg_engine_GPU.h">
-      <Filter>engines</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\engines\gSLICr_seg_engine_shared.h">
-      <Filter>engines</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\objects\gSLICr_settings.h">
-      <Filter>engines</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\objects\gSLICr_spixel_info.h">
-      <Filter>engines</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\gSLICr_defines.h">
-      <Filter>engines</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Git\gSLICr\gSLICr_Lib\gSLICr.h">
-      <Filter>engines</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Git\gSLICr\NVTimer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClInclude Include="..\gSLICr_Lib\engines\gSLICr_core_engine.h" />
+    <ClInclude Include="..\gSLICr_Lib\engines\gSLICr_seg_engine.h" />
+    <ClInclude Include="..\gSLICr_Lib\engines\gSLICr_seg_engine_GPU.h" />
+    <ClInclude Include="..\gSLICr_Lib\engines\gSLICr_seg_engine_shared.h" />
+    <ClInclude Include="..\gSLICr_Lib\objects\gSLICr_settings.h" />
+    <ClInclude Include="..\gSLICr_Lib\objects\gSLICr_spixel_info.h" />
+    <ClInclude Include="..\gSLICr_Lib\gSLICr_defines.h" />
+    <ClInclude Include="..\gSLICr_Lib\gSLICr.h" />
+    <ClInclude Include="..\NVTimer.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

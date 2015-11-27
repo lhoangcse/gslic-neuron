@@ -1,21 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="D:\Git\gSLICr\ORUtils\Dummy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="..\ORUtils\Dummy.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="D:\Git\gSLICr\ORUtils\Vector.h" />
-    <ClInclude Include="D:\Git\gSLICr\ORUtils\Matrix.h" />
-    <ClInclude Include="D:\Git\gSLICr\ORUtils\Cholesky.h" />
-    <ClInclude Include="D:\Git\gSLICr\ORUtils\MathUtils.h" />
-    <ClInclude Include="D:\Git\gSLICr\ORUtils\Image.h" />
-    <ClInclude Include="D:\Git\gSLICr\ORUtils\CUDADefines.h" />
-    <ClInclude Include="D:\Git\gSLICr\ORUtils\LexicalCast.h" />
-    <ClInclude Include="D:\Git\gSLICr\ORUtils\MemoryBlock.h" />
-    <ClInclude Include="D:\Git\gSLICr\ORUtils\MemoryBlockPersister.h" />
-    <ClInclude Include="D:\Git\gSLICr\ORUtils\PlatformIndependence.h" />
+    <ClInclude Include="..\ORUtils\Vector.h" />
+    <ClInclude Include="..\ORUtils\Matrix.h" />
+    <ClInclude Include="..\ORUtils\Cholesky.h" />
+    <ClInclude Include="..\ORUtils\MathUtils.h" />
+    <ClInclude Include="..\ORUtils\Image.h" />
+    <ClInclude Include="..\ORUtils\CUDADefines.h" />
+    <ClInclude Include="..\ORUtils\LexicalCast.h" />
+    <ClInclude Include="..\ORUtils\MemoryBlock.h" />
+    <ClInclude Include="..\ORUtils\MemoryBlockPersister.h" />
+    <ClInclude Include="..\ORUtils\PlatformIndependence.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
