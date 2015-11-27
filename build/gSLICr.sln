@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ORUtils", "ORUtils.vcxproj", "{35CD60F4-C058-3D8A-95F6-03A4B8AB01D9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "demo", "demo.vcxproj", "{DB7E67F7-88B8-378E-927C-D87ECCE6E30E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DB074409-27D5-3BFA-A2FC-97F857E08C0F} = {DB074409-27D5-3BFA-A2FC-97F857E08C0F}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gSLICr_lib", "gSLICr_lib.vcxproj", "{DB074409-27D5-3BFA-A2FC-97F857E08C0F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{35CD60F4-C058-3D8A-95F6-03A4B8AB01D9}.Debug|x64.ActiveCfg = Debug|x64
+		{35CD60F4-C058-3D8A-95F6-03A4B8AB01D9}.Debug|x64.Build.0 = Debug|x64
+		{35CD60F4-C058-3D8A-95F6-03A4B8AB01D9}.Release|x64.ActiveCfg = Release|x64
+		{35CD60F4-C058-3D8A-95F6-03A4B8AB01D9}.Release|x64.Build.0 = Release|x64
+		{DB7E67F7-88B8-378E-927C-D87ECCE6E30E}.Debug|x64.ActiveCfg = Debug|x64
+		{DB7E67F7-88B8-378E-927C-D87ECCE6E30E}.Debug|x64.Build.0 = Debug|x64
+		{DB7E67F7-88B8-378E-927C-D87ECCE6E30E}.Release|x64.ActiveCfg = Release|x64
+		{DB7E67F7-88B8-378E-927C-D87ECCE6E30E}.Release|x64.Build.0 = Release|x64
+		{DB074409-27D5-3BFA-A2FC-97F857E08C0F}.Debug|x64.ActiveCfg = Debug|x64
+		{DB074409-27D5-3BFA-A2FC-97F857E08C0F}.Debug|x64.Build.0 = Debug|x64
+		{DB074409-27D5-3BFA-A2FC-97F857E08C0F}.Release|x64.ActiveCfg = Release|x64
+		{DB074409-27D5-3BFA-A2FC-97F857E08C0F}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
