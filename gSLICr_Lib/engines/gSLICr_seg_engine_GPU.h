@@ -12,11 +12,10 @@ namespace gSLICr
 		private:
 
 			int no_grid_per_center;
-			ORUtils::Image<objects::spixel_info>* accum_map;
-			IntImage* tmp_idx_img;
+            SpixelMap* accum_map;
+            IntImage4D* tmp_idx_img;
 
 		protected:
-			void Cvt_Img_Space(UChar4Image* inimg, Float4Image* outimg, COLOR_SPACE color_space);
 			void Init_Cluster_Centers();
 			void Find_Center_Association();
 			void Update_Cluster_Center();
@@ -28,6 +27,10 @@ namespace gSLICr
 			~seg_engine_GPU();
 
 			void Draw_Segmentation_Result(UChar4Image* out_img);
+
+        public:
+            int Test_Update_Clusters();
+            int Test_Enforce_Connectivity();
 		};
 	}
 }

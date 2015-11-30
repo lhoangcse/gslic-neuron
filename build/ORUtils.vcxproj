@@ -109,6 +109,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\ORUtils\Image4D.h" />
     <ClInclude Include="..\ORUtils\Vector.h" />
     <ClInclude Include="..\ORUtils\Matrix.h" />
     <ClInclude Include="..\ORUtils\Cholesky.h" />

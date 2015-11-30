@@ -9,12 +9,13 @@ namespace gSLICr
 	{
 		struct spixel_info
 		{
-			Vector2f center;
+			Vector3f center;
 			Vector4f color_info;
+            neur red_color;
 			int id;
 			int no_pixels;
 		};
 	}
 
-	typedef ORUtils::Image<objects::spixel_info> SpixelMap;
+	typedef ORUtils::Image4D<objects::spixel_info> SpixelMap;
 }

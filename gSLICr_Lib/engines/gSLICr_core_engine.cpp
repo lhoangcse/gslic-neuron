@@ -17,14 +17,15 @@ gSLICr::engines::core_engine::~core_engine()
 		delete slic_seg_engine;
 }
 
-void gSLICr::engines::core_engine::Process_Frame(UChar4Image* in_img)
+void gSLICr::engines::core_engine::Process_Frame(NeuronImage* in_img_red, NeuronImage* in_img_green)
 {
-	slic_seg_engine->Perform_Segmentation(in_img);
+    slic_seg_engine->Perform_Segmentation(in_img_red, in_img_green);
 }
 
 const IntImage * gSLICr::engines::core_engine::Get_Seg_Res()
 {
-	return slic_seg_engine->Get_Seg_Mask();
+    return nullptr;
+	//return slic_seg_engine->Get_Seg_Mask();
 }
 
 void gSLICr::engines::core_engine::Draw_Segmentation_Result(UChar4Image* out_img)
@@ -34,19 +35,19 @@ void gSLICr::engines::core_engine::Draw_Segmentation_Result(UChar4Image* out_img
 
 void gSLICr::engines::core_engine::Write_Seg_Res_To_PGM(const char* fileName)
 {
-	const IntImage* idx_img = slic_seg_engine->Get_Seg_Mask();
-	int width = idx_img->noDims.x;
-	int height = idx_img->noDims.y;
-	const int* data_ptr = idx_img->GetData(MEMORYDEVICE_CPU);
+	//const IntImage* idx_img = slic_seg_engine->Get_Seg_Mask();
+	//int width = idx_img->noDims.x;
+	//int height = idx_img->noDims.y;
+	//const int* data_ptr = idx_img->GetData(MEMORYDEVICE_CPU);
 
-	ofstream f(fileName, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
-	f << "P5\n" << width << " " << height << "\n65535\n";
-	for (int i = 0; i < height * width; ++i)
-	{
-		ushort lable = (ushort)data_ptr[i];
-		ushort lable_buffer = (lable << 8 | lable >> 8);
-		f.write((const char*)&lable_buffer, sizeof(ushort));
-	}
-	f.close();
+	//ofstream f(fileName, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc);
+	//f << "P5\n" << width << " " << height << "\n65535\n";
+	//for (int i = 0; i < height * width; ++i)
+	//{
+	//	ushort lable = (ushort)data_ptr[i];
+	//	ushort lable_buffer = (lable << 8 | lable >> 8);
+	//	f.write((const char*)&lable_buffer, sizeof(ushort));
+	//}
+	//f.close();
 }
 

@@ -9,7 +9,8 @@ namespace gSLICr
 	{
 		struct settings
 		{
-			Vector2i img_size;
+            Vector4i img_size_red;
+            Vector4i img_size_green;
 			int no_segs;
 			int spixel_size;
 			int no_iters;

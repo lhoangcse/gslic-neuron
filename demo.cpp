@@ -10,6 +10,8 @@
 #include "opencv2/core/core.hpp"
 #include "opencv2/opencv.hpp"
 
+#include <fstream>
+
 using namespace std;
 using namespace cv;
 
@@ -42,51 +44,101 @@ void load_image(const gSLICr::UChar4Image* inimg, Mat& outimg)
 		}
 }
 
+bool load_neuron_image(
+    const char* file,
+    gSLICr::NeuronImage*& img_out,
+    gSLICr::Vector4i& img_size,
+    int w, int h, int d, int t)
+{
+    int size[4] = { w, h, d, t };
+    img_size = size;
+
+    // allocate image and fill buffer from binary file
+    img_out = new gSLICr::NeuronImage(img_size, true, false);
+
+    ifstream is(file, ios::binary);
+
+    // get length of file
+    is.seekg(0, ios::end);
+    int length = is.tellg();
+    is.seekg(0, ios::beg);
+
+    AssertExit(length == img_out->dataSize * sizeof(gSLICr::neur));
+
+    gSLICr::neur* buffer = img_out->GetData(MEMORYDEVICE_CPU);
+    is.read((char*)buffer, length);
+    is.close();
+
+    return true;
+}
+
 
 int main()
 {
+    int w = 120, h = 120, d = 17, t = 1;
+    gSLICr::NeuronImage* red_img;
+    gSLICr::Vector4i red_img_size;
+    AssertExit(load_neuron_image(
+        "D:\\Git\\CS205-Neuron-Tracking-and-Identification-Using-GPU-4D-Clustering-Algorithms\\Existing_code\\neuron-red-avg.bin",
+        red_img,
+        red_img_size,
+        w, h, d, t));
+
+    t = 310;
+    gSLICr::NeuronImage* green_img;
+    gSLICr::Vector4i green_img_size;
+    AssertExit(load_neuron_image(
+        "D:\\Git\\CS205-Neuron-Tracking-and-Identification-Using-GPU-4D-Clustering-Algorithms\\Existing_code\\neuron-green-norm.bin",
+        green_img,
+        green_img_size,
+        w, h, d, t));
+
+    AssertExit(red_img_size.x == green_img_size.x);
+    AssertExit(red_img_size.y == green_img_size.y);
+    AssertExit(red_img_size.z == green_img_size.z);
+
 	// gSLICr settings
 	gSLICr::objects::settings my_settings;
-	my_settings.img_size.x = 640;
-	my_settings.img_size.y = 480;
-	my_settings.no_segs = 2000;
+    my_settings.img_size_green = green_img_size;
+    my_settings.img_size_red = red_img_size;
+    my_settings.no_segs = 40;
 	my_settings.spixel_size = 16;
 	my_settings.coh_weight = 0.6f;
 	my_settings.no_iters = 5;
 	my_settings.color_space = gSLICr::XYZ; // gSLICr::CIELAB for Lab, or gSLICr::RGB for RGB
-	my_settings.seg_method = gSLICr::GIVEN_SIZE; // or gSLICr::GIVEN_NUM for given number
+    my_settings.seg_method = gSLICr::GIVEN_NUM; // or gSLICr::GIVEN_NUM for given number
 	my_settings.do_enforce_connectivity = true; // wheter or not run the enforce connectivity step
 
 	// instantiate a core_engine
 	gSLICr::engines::core_engine* gSLICr_engine = new gSLICr::engines::core_engine(my_settings);
 
-	// gSLICr takes gSLICr::UChar4Image as input and out put
-	gSLICr::UChar4Image* in_img = new gSLICr::UChar4Image(my_settings.img_size, true, true);
-	gSLICr::UChar4Image* out_img = new gSLICr::UChar4Image(my_settings.img_size, true, true);
+	//// gSLICr takes gSLICr::UChar4Image as input and out put
+	//gSLICr::UChar4Image* in_img = new gSLICr::UChar4Image(my_settings.img_size, true, true);
+	//gSLICr::UChar4Image* out_img = new gSLICr::UChar4Image(my_settings.img_size, true, true);
 
-	Size s(my_settings.img_size.x, my_settings.img_size.y);
-	Mat oldFrame, frame;
-	Mat boundry_draw_frame; boundry_draw_frame.create(s, CV_8UC3);
+	//Size s(my_settings.img_size.x, my_settings.img_size.y);
+	//Mat oldFrame, frame;
+	//Mat boundry_draw_frame; boundry_draw_frame.create(s, CV_8UC3);
 
     StopWatchInterface *my_timer; sdkCreateTimer(&my_timer);
     
-    oldFrame = imread("photo.jpg");
-    resize(oldFrame, frame, s);
-	load_image(frame, in_img);
-    imshow("image", frame);
+    //oldFrame = imread("photo.jpg");
+    //resize(oldFrame, frame, s);
+	//load_image(frame, in_img);
+    //imshow("image", frame);
 
     sdkResetTimer(&my_timer); sdkStartTimer(&my_timer);
-	gSLICr_engine->Process_Frame(in_img);
+    gSLICr_engine->Process_Frame(red_img, green_img);
     sdkStopTimer(&my_timer); 
     cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;
         
-	gSLICr_engine->Draw_Segmentation_Result(out_img);
-		
-	load_image(out_img, boundry_draw_frame);
-    imshow("segmentation", boundry_draw_frame);
+	//gSLICr_engine->Draw_Segmentation_Result(out_img);
 
-    waitKey(0);
-
-	destroyAllWindows();
+	//load_image(out_img, boundry_draw_frame);
+    //imshow("segmentation", boundry_draw_frame);
+    
+    //waitKey(0);
+    
+	//destroyAllWindows();
     return 0;
 }
