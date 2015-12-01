@@ -86,7 +86,7 @@ seg_engine_GPU::seg_engine_GPU(const settings& in_settings) : seg_engine(in_sett
     // maximum xyz distance between any two points within a cluster
     // is 3 * (S^2) where S = size of super pixel
     max_xyz_dist = 1.0f / (sqrtf(3) * spixel_size);
-    max_color_dist = 5.0f / 1000; // TODO: adjust color normalization to [0,1]
+    max_color_dist = 1.0f; // TODO: adjust color normalization to [0,1]
 }
 
 gSLICr::engines::seg_engine_GPU::~seg_engine_GPU()
@@ -269,10 +269,33 @@ __global__ void Update_Cluster_Center_device(
                     blockIdx.y * map_size.x +
                     blockIdx.x;
 
+    //if (blockIdx.x == 0 && blockIdx.y == 0 && blockIdx_z == 0)
+    //{
+    //    printf("%d ", local_id);
+    //}
+
+    //if (local_id == 0)
+    //{
+    //    printf("blockDim: x = %d, y = %d, z = %d\n", blockDim.x, blockDim.y, blockDim.z);
+    //    printf("gridDim:  x = %d, y = %d, z = %d\n", gridDim.x, gridDim.y, gridDim.z);
+    //    printf("no_blocks_per_spixel = %d\n", no_blocks_per_spixel);
+    //}
 	// compute the relative position in the search window
     int block_x = blockIdx_grid % no_blocks_per_line;
     int block_y = (blockIdx_grid / no_blocks_per_line) % no_blocks_per_line;
     int block_z = blockIdx_grid / (no_blocks_per_line * no_blocks_per_line);
+
+    //if (threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
+    //{
+    //    printf("blockIdx.z = %d,blockIdx.y = %d,blockIdx.x = %d\n",
+    //        blockIdx.z, blockIdx.y, blockIdx.x);
+    //    //printf("block_x = %d,block_y = %d,block_z = %d\n", block_x, block_y, block_z);
+    //}
+
+    //if (block_z == 0)
+    //{
+    //    printf("hello");
+    //}
 
 	int x_offset = block_x * BLOCK_DIM + threadIdx.x;
     int y_offset = block_y * BLOCK_DIM + threadIdx.y;
@@ -299,6 +322,11 @@ __global__ void Update_Cluster_Center_device(
             // if this pixel belongs to the current cluster then add it to the list
 			if (in_idx_img[img_idx] == spixel_id)
 			{
+                //if (blockIdx.x == 0 && blockIdx.y == 0 && blockIdx_z == 0)
+                //{
+                //    printf("spid %d, lid %d, img_idx %d, x %d, y %d, z %d, color %f\n",
+                //        spixel_id, local_id, img_idx, x_img, y_img, z_img, inimg[img_idx]);
+                //}
 				color_shared[local_id] = inimg[img_idx];
                 xyz_shared[local_id] = Vector3f(x_img, y_img, z_img);
 				count_shared[local_id] = 1;
@@ -310,6 +338,19 @@ __global__ void Update_Cluster_Center_device(
 
 	if (should_add)
 	{
+        //if (blockIdx.x == 0 && blockIdx.y == 0 && blockIdx_z == 0 &&
+        //    threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
+        //{
+        //    printf("------------------------\n");
+        //    for (size_t i = 0; i < 512; i++)
+        //    {
+        //        printf("(x = %f, y = %f, z = %f) ",
+        //            xyz_shared[i].x, xyz_shared[i].y, xyz_shared[i].z);
+        //    }
+        //    printf("\n");
+        //}
+        __syncthreads();
+
         // parallel reduction in local memory using unrolled loops
         if (local_id < 256)
         {
@@ -367,6 +408,16 @@ __global__ void Update_Cluster_Center_device(
         accum_map[accum_map_idx].center = xyz_shared[0];
         accum_map[accum_map_idx].red_color = color_shared[0];
         accum_map[accum_map_idx].no_pixels = count_shared[0];
+
+        //if (blockIdx.x == 0 && blockIdx.y == 0 && blockIdx_z == 0 &&
+        //    threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
+        //{
+        //    printf("accum_idx %f, x %f, y %f, z %f, color %f, count %d\n",
+        //        accum_map_idx, 
+        //        xyz_shared[0].x, xyz_shared[0].y, xyz_shared[0].z,
+        //        color_shared[0],
+        //        count_shared[0]);
+        //}
 	}
 
 
@@ -410,12 +461,27 @@ int seg_engine_GPU::Test_Update_Clusters()
     Vector4i accum_img_size = accum_map->noDims;
     int max_display = 40;
     const spixel_info* data = accum_map->GetData(MEMORYDEVICE_CPU);
+
+    size_t total_pixels = 0;
+    for (size_t i = 0; i < accum_map->dataSize; i++)
+    {
+        total_pixels += data[i].no_pixels;
+        if (data[i].center.x > 0)
+        {
+            int xx = 0;
+            xx++;
+        }
+    }
+
     printf("\n");
     for (size_t j = 0; j < min(max_display, accum_img_size.y); j++)
     {
+        printf("--------- j = %d ---------\n");
         for (size_t i = 0; i < min(max_display, accum_img_size.x); i++)
         {
-            printf("%d;", data[j * accum_img_size.x + i].red_color);
+            const spixel_info& d = data[j * accum_img_size.x + i];
+            printf("i = %d, id = %d, color = %f, x = %f, y = %f, z = %f, no_pix = %d\n",
+                i, d.id, d.red_color, d.center.x, d.center.y, d.center.z, d.no_pixels);
         }
         printf("\n");
     }
@@ -430,5 +496,23 @@ int seg_engine_GPU::Test_Enforce_Connectivity()
     ORcudaSafeCall(cudaPeekAtLastError());
     ORcudaSafeCall(cudaDeviceSynchronize());
 
+    idx_img->UpdateHostFromDevice();
+
+    Vector4i idx_img_size = idx_img->noDims;
+    int* data = idx_img->GetData(MEMORYDEVICE_CPU);
+
+    int* clusters = (int*)calloc(2000, sizeof(int));
+    for (size_t i = 0; i < idx_img->dataSize; i++)
+    {
+        clusters[data[i]]++;
+    }
+
+    size_t total_pixels = 0;
+    for (size_t i = 0; i < 2000; i++)
+    {
+        total_pixels += clusters[i];
+    }
+
+    free(clusters);
     return 0;
 }
