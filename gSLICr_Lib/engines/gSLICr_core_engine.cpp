@@ -22,10 +22,9 @@ void gSLICr::engines::core_engine::Process_Frame(NeuronImage* in_img_red, Neuron
     slic_seg_engine->Perform_Segmentation(in_img_red, in_img_green);
 }
 
-const IntImage * gSLICr::engines::core_engine::Get_Seg_Res()
+const IntImage4D * gSLICr::engines::core_engine::Get_Seg_Res()
 {
-    return nullptr;
-	//return slic_seg_engine->Get_Seg_Mask();
+	return slic_seg_engine->Get_Seg_Mask();
 }
 
 void gSLICr::engines::core_engine::Draw_Segmentation_Result(UChar4Image* out_img)

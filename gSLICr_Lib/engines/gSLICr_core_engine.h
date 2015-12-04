@@ -23,7 +23,7 @@ namespace gSLICr
             void Process_Frame(NeuronImage* in_img_red, NeuronImage* in_img_green);
 
 			// Function to get the pointer to the segmented mask image
-			const IntImage * Get_Seg_Res();
+			const IntImage4D * Get_Seg_Res();
 
 			// Function to draw segmentation result on out_img
 			void Draw_Segmentation_Result(UChar4Image* out_img);

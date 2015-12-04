@@ -32,15 +32,15 @@ void seg_engine::Perform_Segmentation(NeuronImage* in_img_red, NeuronImage* in_i
     //Test_Init_Clusters();
 
 	Find_Center_Association();
-    //Test_Find_Center();
+    //Test_Display_Pixel_Membership();
 
 	for (int i = 0; i < gSLICr_settings.no_iters; i++)
 	{
 		Update_Cluster_Center();
-        //Test_Update_Clusters();
+        //Test_Display_Pixel_Membership();
 
 		Find_Center_Association();
-        //Test_Find_Center();
+        //Test_Display_Pixel_Membership();
     }
 
     if (gSLICr_settings.do_enforce_connectivity)
@@ -48,7 +48,7 @@ void seg_engine::Perform_Segmentation(NeuronImage* in_img_red, NeuronImage* in_i
         Enforce_Connectivity();
         //Test_Enforce_Connectivity();
     }
-    //Test_Find_Center();
+    //Test_Display_Pixel_Membership();
     cudaThreadSynchronize();
 }
 
@@ -83,7 +83,7 @@ int seg_engine::Test_Init_Clusters()
     return 0;
 }
 
-int seg_engine::Test_Find_Center()
+int seg_engine::Test_Display_Pixel_Membership()
 {
     ORcudaSafeCall(cudaPeekAtLastError());
     ORcudaSafeCall(cudaDeviceSynchronize());
@@ -92,7 +92,7 @@ int seg_engine::Test_Find_Center()
 
     Vector4i img_size = idx_img->noDims;
     int max2d_display = 50;
-    int max3d_display = 50;
+    int max3d_display = 2;
     size_t z_step = img_size.x * img_size.y;
     const int* data = idx_img->GetData(MEMORYDEVICE_CPU);
     printf("\n");

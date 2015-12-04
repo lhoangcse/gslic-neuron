@@ -5,8 +5,8 @@
 #include "../objects/gSLICr_settings.h"
 #include "../objects/gSLICr_spixel_info.h"
 
-#define AssertExitI(cond) if(!cond) { printf("File %s, line %i, assert failed.\n", __FILE__, __LINE__); return -1; }
-#define AssertExitB(cond) if(!cond) { printf("File %s, line %i, assert failed.\n", __FILE__, __LINE__); return false; }
+#define AssertExitI(cond) if(!(cond)) { printf("File %s, line %i, assert failed.\n", __FILE__, __LINE__); return -1; }
+#define AssertExitB(cond) if(!(cond)) { printf("File %s, line %i, assert failed.\n", __FILE__, __LINE__); return false; }
 
 namespace gSLICr
 {
@@ -51,7 +51,7 @@ namespace gSLICr
 
         public:
             int Test_Init_Clusters();
-            int Test_Find_Center();
+            int Test_Display_Pixel_Membership();
             virtual int Test_Update_Clusters() { return 0; }
             virtual int Test_Enforce_Connectivity() { return 0; }
         };
