@@ -131,41 +131,15 @@ int main()
 	// instantiate a core_engine
 	gSLICr::engines::core_engine* gSLICr_engine = new gSLICr::engines::core_engine(my_settings);
 
-    //Mat display_red_img(IMAGE_HEIGHT, IMAGE_WIDTH,
-    //    CV_32SC1, red_img->GetData(MEMORYDEVICE_CPU));
-    //imshow("Original Red Image", display_red_img);
-    //waitKey(0);
-
-	//// gSLICr takes gSLICr::UChar4Image as input and out put
-	//gSLICr::UChar4Image* in_img = new gSLICr::UChar4Image(my_settings.img_size, true, true);
-	//gSLICr::UChar4Image* out_img = new gSLICr::UChar4Image(my_settings.img_size, true, true);
-
-	//Size s(my_settings.img_size.x, my_settings.img_size.y);
-	//Mat oldFrame, frame;
-	//Mat boundry_draw_frame; boundry_draw_frame.create(s, CV_8UC3);
-
     StopWatchInterface *my_timer; sdkCreateTimer(&my_timer);
     
-    //oldFrame = imread("photo.jpg");
-    //resize(oldFrame, frame, s);
-	//load_image(frame, in_img);
-    //imshow("image", frame);
-
     sdkResetTimer(&my_timer); sdkStartTimer(&my_timer);
     gSLICr_engine->Process_Frame(red_img, green_img);
     sdkStopTimer(&my_timer); 
     cout<<"\rsegmentation in:["<<sdkGetTimerValue(&my_timer)<<"]ms"<<flush;
         
-	//gSLICr_engine->Draw_Segmentation_Result(out_img);
-
     const gSLICr::IntImage4D* seg_res = gSLICr_engine->Get_Seg_Res();
     AssertExitI(write_seg_res(seg_file.c_str(), seg_res));
 
-	//load_image(out_img, boundry_draw_frame);
-    //imshow("segmentation", boundry_draw_frame);
-    
-    //waitKey(0);
-    
-	//destroyAllWindows();
     return 0;
 }

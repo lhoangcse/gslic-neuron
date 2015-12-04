@@ -29,30 +29,24 @@ void seg_engine::Perform_Segmentation(NeuronImage* in_img_red, NeuronImage* in_i
     src_img_green->SetFrom(in_img_green, ORUtils::MemoryBlock<neur>::CPU_TO_CUDA);
     
 	Init_Cluster_Centers();
-    //Test_Init_Clusters();
 
 	Find_Center_Association();
-    //Test_Display_Pixel_Membership();
 
 	for (int i = 0; i < gSLICr_settings.no_iters; i++)
 	{
 		Update_Cluster_Center();
-        //Test_Display_Pixel_Membership();
 
 		Find_Center_Association();
-        //Test_Display_Pixel_Membership();
     }
 
     if (gSLICr_settings.do_enforce_connectivity)
     {
         Enforce_Connectivity();
-        //Test_Enforce_Connectivity();
     }
-    //Test_Display_Pixel_Membership();
     cudaThreadSynchronize();
 }
 
-int seg_engine::Test_Init_Clusters()
+int seg_engine::Test_Display_SPixel_Grid()
 {
     ORcudaSafeCall(cudaPeekAtLastError());
     ORcudaSafeCall(cudaDeviceSynchronize());

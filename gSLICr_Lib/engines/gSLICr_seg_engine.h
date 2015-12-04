@@ -47,13 +47,10 @@ namespace gSLICr
 			};
 
             void Perform_Segmentation(NeuronImage* in_img_red, NeuronImage* in_img_green);
-			virtual void Draw_Segmentation_Result(UChar4Image* out_img){};
 
         public:
-            int Test_Init_Clusters();
+            int Test_Display_SPixel_Grid();
             int Test_Display_Pixel_Membership();
-            virtual int Test_Update_Clusters() { return 0; }
-            virtual int Test_Enforce_Connectivity() { return 0; }
         };
 	}
 }

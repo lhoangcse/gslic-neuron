@@ -25,12 +25,6 @@ namespace gSLICr
 
 			seg_engine_GPU(const objects::settings& in_settings);
 			~seg_engine_GPU();
-
-			void Draw_Segmentation_Result(UChar4Image* out_img);
-
-        public:
-            int Test_Update_Clusters();
-            int Test_Enforce_Connectivity();
 		};
 	}
 }

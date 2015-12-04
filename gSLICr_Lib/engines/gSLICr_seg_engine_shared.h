@@ -89,12 +89,10 @@ _CPU_AND_GPU_CODE_ inline void init_cluster_centers_shared(
     int img_idx = img_z * img_size.y * img_size.x + img_y * img_size.x + img_x;
 
 	// TODO: go one step towards gradients direction
-    //printf("x=%d,y=%d,z=%d,ix=%d,iy=%d,iz=%d,c=%d\n", x, y, z, img_x, img_y, img_z, cluster_idx);
 
 	out_spixel[cluster_idx].id = cluster_idx;
     out_spixel[cluster_idx].center = 
         gSLICr::Vector3f((float)img_x, (float)img_y, (float)img_z);
-	//out_spixel[cluster_idx].color_info = inimg[img_idx];
     for (int i = 0; i < IMAGE_TIME; i++)
     {
         out_spixel[cluster_idx].green_color[i] = in_img_green[img_idx + i * time_step];
@@ -129,18 +127,6 @@ _CPU_AND_GPU_CODE_ inline float compute_slic_distance(
     dt = 1 - dt;
 
 	float retval = dcolor * normalizer_color + weight * dxyz * normalizer_xy + dt;
-
-    //if (idx_img == 0)
-    //{
-    //    printf("xyz %d %d %d, c-xyz %f %f %f, dcolor %f,dxyz %f,dt %f,retval %f, green ",
-    //        x, y, z, center_info.center.x, center_info.center.y, center_info.center.z,
-    //        dcolor, dxyz, dt, retval);
-    //    for (t = 0; t < img_size.w; t++)
-    //    {
-    //        printf("%f ", center_info.green_color[t]);
-    //    }
-    //    printf("\n");
-    //}
 
 	return retval;
 }
@@ -186,23 +172,6 @@ _CPU_AND_GPU_CODE_ inline void find_center_association_shared(
 	}
 
 	if (minidx >= 0) out_idx_img[idx_img] = minidx;
-}
-
-_CPU_AND_GPU_CODE_ inline void draw_superpixel_boundry_shared(const int* idx_img, gSLICr::Vector4u* sourceimg, gSLICr::Vector4u* outimg, gSLICr::Vector2i img_size, int x, int y)
-{
-	int idx = y * img_size.x + x;
-
-	if (idx_img[idx] != idx_img[idx + 1]
-	 || idx_img[idx] != idx_img[idx - 1]
-	 || idx_img[idx] != idx_img[(y - 1)*img_size.x + x]
-	 || idx_img[idx] != idx_img[(y + 1)*img_size.x + x])
-	{
-		outimg[idx] = gSLICr::Vector4u(0,0,255,0);
-	}
-	else
-	{
-		outimg[idx] = sourceimg[idx];
-	}
 }
 
 _CPU_AND_GPU_CODE_ inline void finalize_reduction_result_shared(
