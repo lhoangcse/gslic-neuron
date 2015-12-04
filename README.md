@@ -1,4 +1,4 @@
-Modified implementation of https://github.com/carlren/gSLICr and adapted to neuron tracking
+Modified implementation of https://github.com/carlren/gSLICr and adapted to 3D clustering using 4D distance for neuron tracking.
 
 Instructions to set up (Windows only):
 
