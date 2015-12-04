@@ -63,7 +63,7 @@ bool load_neuron_image(
     int length = is.tellg();
     is.seekg(0, ios::beg);
 
-    AssertExit(length == img_out->dataSize * sizeof(gSLICr::neur));
+    AssertExitB(length == img_out->dataSize * sizeof(gSLICr::neur));
 
     gSLICr::neur* buffer = img_out->GetData(MEMORYDEVICE_CPU);
     is.read((char*)buffer, length);
@@ -75,42 +75,46 @@ bool load_neuron_image(
 
 int main()
 {
-    int w = 120, h = 120, d = 17, t = 1;
+#ifdef USE_FAKE_DATA
+    const char* red_file   = "D:\\Git\\gslic-neuron\\data\\fake\\neuron-red-avg.bin";
+    const char* green_file = "D:\\Git\\gslic-neuron\\data\\fake\\neuron-green-norm.bin";
+#else
+    const char* red_file   = "D:\\Git\\gslic-neuron\\data\\real\\neuron-red-avg.bin";
+    const char* green_file = "D:\\Git\\gslic-neuron\\data\\real\\neuron-green-norm.bin";
+#endif
+    int w = IMAGE_WIDTH, h = IMAGE_HEIGHT, d = IMAGE_DEPTH, t = 1;
     gSLICr::NeuronImage* red_img;
     gSLICr::Vector4i red_img_size;
-    AssertExit(load_neuron_image(
-        "D:\\Git\\CS205-Neuron-Tracking-and-Identification-Using-GPU-4D-Clustering-Algorithms\\Existing_code\\neuron-red-avg.bin",
-        red_img,
-        red_img_size,
-        w, h, d, t));
+    AssertExitI(load_neuron_image(red_file, red_img, red_img_size, w, h, d, t));
 
-    t = 310;
+    t = IMAGE_TIME;
     gSLICr::NeuronImage* green_img;
     gSLICr::Vector4i green_img_size;
-    AssertExit(load_neuron_image(
-        "D:\\Git\\CS205-Neuron-Tracking-and-Identification-Using-GPU-4D-Clustering-Algorithms\\Existing_code\\neuron-green-norm.bin",
-        green_img,
-        green_img_size,
-        w, h, d, t));
+    AssertExitI(load_neuron_image(green_file, green_img, green_img_size, w, h, d, t));
 
-    AssertExit(red_img_size.x == green_img_size.x);
-    AssertExit(red_img_size.y == green_img_size.y);
-    AssertExit(red_img_size.z == green_img_size.z);
+    AssertExitI(red_img_size.x == green_img_size.x);
+    AssertExitI(red_img_size.y == green_img_size.y);
+    AssertExitI(red_img_size.z == green_img_size.z);
 
 	// gSLICr settings
 	gSLICr::objects::settings my_settings;
     my_settings.img_size_green = green_img_size;
     my_settings.img_size_red = red_img_size;
-    my_settings.no_segs = 40;
+    my_settings.no_segs = 75;
 	my_settings.spixel_size = 16;
 	my_settings.coh_weight = 0.6f;
-	my_settings.no_iters = 5;
+	my_settings.no_iters = 10;
 	my_settings.color_space = gSLICr::XYZ; // gSLICr::CIELAB for Lab, or gSLICr::RGB for RGB
     my_settings.seg_method = gSLICr::GIVEN_NUM; // or gSLICr::GIVEN_NUM for given number
 	my_settings.do_enforce_connectivity = true; // wheter or not run the enforce connectivity step
 
 	// instantiate a core_engine
 	gSLICr::engines::core_engine* gSLICr_engine = new gSLICr::engines::core_engine(my_settings);
+
+    //Mat display_red_img(IMAGE_HEIGHT, IMAGE_WIDTH,
+    //    CV_32SC1, red_img->GetData(MEMORYDEVICE_CPU));
+    //imshow("Original Red Image", display_red_img);
+    //waitKey(0);
 
 	//// gSLICr takes gSLICr::UChar4Image as input and out put
 	//gSLICr::UChar4Image* in_img = new gSLICr::UChar4Image(my_settings.img_size, true, true);

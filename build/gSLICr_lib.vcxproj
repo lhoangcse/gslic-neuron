@@ -40,7 +40,7 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
     <OutDir Condition="'$(Platform)'=='x64'">$(SolutionDir)$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Platform)'=='x64'">$(SolutionDir)Int\$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Platform)'=='x64'">$(SolutionDir)Int\$(Configuration)\$(ProjectName)\</IntDir>
     <TargetName Condition="'$(Platform)'=='x64'">gSLICr_lib</TargetName>
     <TargetExt Condition="'$(Platform)'=='x64'">.lib</TargetExt>
   </PropertyGroup>

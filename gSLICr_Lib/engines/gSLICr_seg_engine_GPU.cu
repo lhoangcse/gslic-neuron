@@ -18,7 +18,7 @@ __global__ void Enforce_Connectivity_device(
     const int* in_idx_img, int* out_idx_img, Vector4i img_size);
 
 __global__ void Init_Cluster_Centers_device(
-    const neur* inimg, spixel_info* out_spixel,
+    const neur* in_img_red, const neur* in_img_green, spixel_info* out_spixel,
     Vector4i map_size, Vector4i img_size, int spixel_size);
 
 __global__ void Find_Center_Association_device(
@@ -27,7 +27,7 @@ __global__ void Find_Center_Association_device(
     float weight, float max_xyz_dist, float max_color_dist);
 
 __global__ void Update_Cluster_Center_device(
-    const neur* inimg, const int* in_idx_img,
+    const neur* in_img_red, const neur* in_img_green, const int* in_idx_img,
     spixel_info* accum_map, Vector4i map_size, Vector4i img_size,
     int spixel_size, int no_blocks_per_line);
 
@@ -97,10 +97,11 @@ gSLICr::engines::seg_engine_GPU::~seg_engine_GPU()
 void gSLICr::engines::seg_engine_GPU::Init_Cluster_Centers()
 {
 	spixel_info* spixel_list = spixel_map->GetData(MEMORYDEVICE_CUDA);
-	neur* img_ptr = src_img_red->GetData(MEMORYDEVICE_CUDA);
+    neur* red_ptr = src_img_red->GetData(MEMORYDEVICE_CUDA);
+    neur* green_ptr = src_img_green->GetData(MEMORYDEVICE_CUDA);
 
 	Vector4i map_size = spixel_map->noDims;
-    Vector4i img_size = src_img_red->noDims;
+    Vector4i img_size = src_img_green->noDims;
 
     dim3 blockSize(BLOCK_DIM, BLOCK_DIM, BLOCK_DIM);
 	dim3 gridSize(
@@ -109,7 +110,7 @@ void gSLICr::engines::seg_engine_GPU::Init_Cluster_Centers()
         (int)ceil((float)map_size.z / (float)blockSize.z));
 
 	Init_Cluster_Centers_device <<< gridSize, blockSize >>>(
-        img_ptr, spixel_list, map_size, img_size, spixel_size);
+        red_ptr, green_ptr, spixel_list, map_size, img_size, spixel_size);
 }
 
 void gSLICr::engines::seg_engine_GPU::Find_Center_Association()
@@ -139,19 +140,20 @@ void gSLICr::engines::seg_engine_GPU::Update_Cluster_Center()
 {
 	spixel_info* accum_map_ptr = accum_map->GetData(MEMORYDEVICE_CUDA);
 	spixel_info* spixel_list_ptr = spixel_map->GetData(MEMORYDEVICE_CUDA);
-    neur* img_ptr = src_img_red->GetData(MEMORYDEVICE_CUDA);
+    neur* red_ptr = src_img_red->GetData(MEMORYDEVICE_CUDA);
+    neur* green_ptr = src_img_green->GetData(MEMORYDEVICE_CUDA);
     int* idx_ptr = idx_img->GetData(MEMORYDEVICE_CUDA);
 
 	Vector4i map_size = spixel_map->noDims;
     Vector4i img_size = src_img_green->noDims;
 
-	int no_blocks_per_line = spixel_size * 3 / BLOCK_DIM;
+	int no_blocks_per_line = ceil(spixel_size * 3.0f / BLOCK_DIM);
 
     dim3 blockSize(BLOCK_DIM, BLOCK_DIM, BLOCK_DIM);
 	dim3 gridSize(map_size.x, map_size.y, map_size.z * no_grid_per_center);
 
 	Update_Cluster_Center_device<<< gridSize, blockSize >>>(
-        img_ptr, idx_ptr, accum_map_ptr, map_size, img_size,
+        red_ptr, green_ptr, idx_ptr, accum_map_ptr, map_size, img_size,
         spixel_size, no_blocks_per_line);
 
 	dim3 gridSize3(map_size.x, map_size.y, map_size.z);
@@ -208,7 +210,7 @@ __global__ void Draw_Segmentation_Result_device(const int* idx_img, Vector4u* so
 }
 
 __global__ void Init_Cluster_Centers_device(
-    const neur* inimg, spixel_info* out_spixel,
+    const neur* in_img_red, const neur* in_img_green, spixel_info* out_spixel,
     Vector4i map_size, Vector4i img_size, int spixel_size)
 {
     int x = threadIdx.x + blockIdx.x * blockDim.x;
@@ -217,7 +219,8 @@ __global__ void Init_Cluster_Centers_device(
     if (x > map_size.x - 1 || y > map_size.y - 1 || z > map_size.z - 1)
         return;
 
-    init_cluster_centers_shared(inimg, out_spixel, map_size, img_size, spixel_size, x, y, z);
+    init_cluster_centers_shared(in_img_red, in_img_green, out_spixel,
+        map_size, img_size, spixel_size, x, y, z);
 }
 
 __global__ void Find_Center_Association_device(
@@ -238,23 +241,46 @@ __global__ void Find_Center_Association_device(
 }
 
 __global__ void Update_Cluster_Center_device(
-    const neur* inimg, const int* in_idx_img, spixel_info* accum_map,
-    Vector4i map_size, Vector4i img_size, int spixel_size, int no_blocks_per_line)
+    const neur* in_img_red, const neur* in_img_green, const int* in_idx_img,
+    spixel_info* accum_map, Vector4i map_size, Vector4i img_size, int spixel_size,
+    int no_blocks_per_line)
 {
 	int local_id = threadIdx.z * blockDim.x * blockDim.y +
                    threadIdx.y * blockDim.x +
                    threadIdx.x;
+    
+    // each block of threads is a cubic with size BLOCK_DIM
+    const int block_size = BLOCK_DIM * BLOCK_DIM * BLOCK_DIM;
+    // size of reduction block
+    int reduce_block_size = 0;
+    // each thread processes 16 time values at a time
+    const int t_size = 16;
+    // size of each 3D image
+    const int time_step = img_size.x * img_size.y * img_size.z;
+    // time index
+    size_t t = 0;
+    size_t tt = 0;
+    size_t t_offset = 0;
 
     // shared memory to store the aggregate values of all pixels
     // that belong to this cluster
-    __shared__ neur color_shared[BLOCK_DIM * BLOCK_DIM * BLOCK_DIM];
-    __shared__ Vector3f xyz_shared[BLOCK_DIM * BLOCK_DIM * BLOCK_DIM];
-    __shared__ int count_shared[BLOCK_DIM * BLOCK_DIM * BLOCK_DIM];
+    __shared__ neur color_shared[block_size];
+    __shared__ neur green_shared[t_size * block_size];
+    __shared__ Vector3f xyz_shared[block_size];
+    __shared__ int count_shared[block_size];
+    __shared__ int pixel_idx[block_size];
 	__shared__ bool should_add; 
 
 	color_shared[local_id] = 0;
     xyz_shared[local_id] = Vector3f(0, 0, 0);
 	count_shared[local_id] = 0;
+    pixel_idx[local_id] = -1;
+
+    for (tt = 0; tt < t_size; tt++)
+    {
+        green_shared[local_id * t_size + tt] = 0;
+    }
+
 	should_add = false;
 	__syncthreads();
 
@@ -268,6 +294,7 @@ __global__ void Update_Cluster_Center_device(
     int spixel_id = blockIdx_z * map_size.y * map_size.x +
                     blockIdx.y * map_size.x +
                     blockIdx.x;
+    int accum_map_idx = spixel_id * no_blocks_per_spixel + blockIdx_grid;
 
     //if (blockIdx.x == 0 && blockIdx.y == 0 && blockIdx_z == 0)
     //{
@@ -327,17 +354,90 @@ __global__ void Update_Cluster_Center_device(
                 //    printf("spid %d, lid %d, img_idx %d, x %d, y %d, z %d, color %f\n",
                 //        spixel_id, local_id, img_idx, x_img, y_img, z_img, inimg[img_idx]);
                 //}
-				color_shared[local_id] = inimg[img_idx];
+				color_shared[local_id] = in_img_red[img_idx];
                 xyz_shared[local_id] = Vector3f(x_img, y_img, z_img);
 				count_shared[local_id] = 1;
+                pixel_idx[local_id] = img_idx;
+
 				should_add = true;
 			}
 		}
 	}
-	__syncthreads();
+    __syncthreads();
 
 	if (should_add)
 	{
+        // load and add up green channels
+        int img_idx = pixel_idx[local_id];
+        //t_offset = local_id * t_size;
+        for (t = 0; t < IMAGE_TIME; t += t_size)
+        {
+            // Each thread loads t_size number of pixels at a time
+            // It's important here that all threads must execute the same
+            // code block leading up to __syncthreads
+            for (tt = 0; tt < t_size; tt++)
+            {
+                if (t + tt >= IMAGE_TIME)
+                {
+                    // even if finished processing image, set value to zero
+                    // so sum-reduction step is trivial
+                    green_shared[local_id + tt * block_size] = 0;
+                }
+                else
+                {
+                    green_shared[local_id + tt * block_size] = (img_idx >= 0) ?
+                        in_img_green[img_idx + (t + tt) * time_step] : 0;
+                }
+            }
+            __syncthreads();
+            // sum-reduce across threads
+            // IMPORTANT: make sure block_size is power of 2 !!!
+            reduce_block_size = block_size / 2;
+            while (reduce_block_size > 0)
+            {
+                // each thread adds the following pair of pixels:
+                // (i                 , i + reduce_block_size                 )
+                // (i +     block_size, i + reduce_block_size +     block_size)
+                // (i + 2 * block_size, i + reduce_block_size + 2 * block_size)
+                // . . . . . . . . . . . . . . . .
+                if (local_id < reduce_block_size)
+                {
+                    for (tt = 0; tt < t_size; tt++)
+                    {
+                        t_offset = local_id + tt * block_size;
+                        green_shared[t_offset] += green_shared[t_offset + reduce_block_size];
+                    }
+                }
+                reduce_block_size = reduce_block_size / 2;
+
+                __syncthreads();
+            }
+
+            // TODO: naive reduce for now, change to parallel reduce later
+            // Pixel at every t_size interval needs to be aggregated
+            //if (local_id < t_size)
+            //{
+            //    for (tt = 1; tt < block_size; tt++)
+            //    {
+            //        green_shared[local_id] += green_shared[local_id + tt * t_size];
+            //    }
+            //}
+            //__syncthreads();
+
+            // output final sum for t_size pixels at a time
+            if (local_id < t_size)
+            {
+                if (t + local_id >= IMAGE_TIME) break;
+
+                // TODO: bank conflict in reading from green_shared
+                // as t_size threads are accessing the same bank. However
+                // global memory writes to accum_map are coalesced.
+                accum_map[accum_map_idx].green_color[t + local_id] =
+                    green_shared[local_id * block_size];
+            }
+            __syncthreads();
+        }
+
         //if (blockIdx.x == 0 && blockIdx.y == 0 && blockIdx_z == 0 &&
         //    threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
         //{
@@ -349,7 +449,7 @@ __global__ void Update_Cluster_Center_device(
         //    }
         //    printf("\n");
         //}
-        __syncthreads();
+        //__syncthreads();
 
         // parallel reduction in local memory using unrolled loops
         if (local_id < 256)
@@ -404,7 +504,6 @@ __global__ void Update_Cluster_Center_device(
 
 	if (local_id == 0)
 	{
-        int accum_map_idx = spixel_id * no_blocks_per_spixel + blockIdx_grid;
         accum_map[accum_map_idx].center = xyz_shared[0];
         accum_map[accum_map_idx].red_color = color_shared[0];
         accum_map[accum_map_idx].no_pixels = count_shared[0];
@@ -412,11 +511,14 @@ __global__ void Update_Cluster_Center_device(
         //if (blockIdx.x == 0 && blockIdx.y == 0 && blockIdx_z == 0 &&
         //    threadIdx.x == 0 && threadIdx.y == 0 && threadIdx.z == 0)
         //{
-        //    printf("accum_idx %f, x %f, y %f, z %f, color %f, count %d\n",
+        //    printf("=> accum_idx %d, xyz %f %f %f, bl_xyz %d %d %d, b_z %d, b_grid %d, color %f, count %d, green %f\n",
         //        accum_map_idx, 
         //        xyz_shared[0].x, xyz_shared[0].y, xyz_shared[0].z,
+        //        blockIdx.x, blockIdx.y, blockIdx.z,
+        //        blockIdx_z, blockIdx_grid,
         //        color_shared[0],
-        //        count_shared[0]);
+        //        count_shared[0],
+        //        green_shared[0]);
         //}
 	}
 
@@ -456,36 +558,59 @@ int seg_engine_GPU::Test_Update_Clusters()
     ORcudaSafeCall(cudaPeekAtLastError());
     ORcudaSafeCall(cudaDeviceSynchronize());
 
-    accum_map->UpdateHostFromDevice();
+    //accum_map->UpdateHostFromDevice();
 
-    Vector4i accum_img_size = accum_map->noDims;
-    int max_display = 40;
-    const spixel_info* data = accum_map->GetData(MEMORYDEVICE_CPU);
+    //Vector4i accum_img_size = accum_map->noDims;
+    //int max_display = 40;
+    //const spixel_info* data = accum_map->GetData(MEMORYDEVICE_CPU);
 
-    size_t total_pixels = 0;
-    for (size_t i = 0; i < accum_map->dataSize; i++)
-    {
-        total_pixels += data[i].no_pixels;
-        if (data[i].center.x > 0)
-        {
-            int xx = 0;
-            xx++;
-        }
-    }
+    //size_t total_pixels = 0;
+    //for (size_t i = 0; i < accum_map->dataSize; i++)
+    //{
+    //    total_pixels += data[i].no_pixels;
+    //    if (data[i].center.x > 0)
+    //    {
+    //        int xx = 0;
+    //        xx++;
+    //    }
+    //}
 
+    //printf("\n");
+    //for (size_t j = 0; j < min(max_display, accum_img_size.y); j++)
+    //{
+    //    printf("--------- j = %d ---------\n");
+    //    for (size_t i = 0; i < min(max_display, accum_img_size.x); i++)
+    //    {
+    //        const spixel_info& d = data[j * accum_img_size.x + i];
+    //        printf("i = %d, id = %d, color = %f, x = %f, y = %f, z = %f, no_pix = %d\n",
+    //            i, d.id, d.red_color, d.center.x, d.center.y, d.center.z, d.no_pixels);
+    //    }
+    //    printf("\n");
+    //}
+
+    //printf("\n");
+
+    spixel_map->UpdateHostFromDevice();
+
+    const spixel_info* sdata = spixel_map->GetData(MEMORYDEVICE_CPU);
     printf("\n");
-    for (size_t j = 0; j < min(max_display, accum_img_size.y); j++)
+    for (size_t i = 0; i < spixel_map->dataSize; i++)
     {
-        printf("--------- j = %d ---------\n");
-        for (size_t i = 0; i < min(max_display, accum_img_size.x); i++)
+        printf("i = %d, xyz = %f %f %f, n = %d, id = %d, red = %f, ",
+            i,
+            sdata[i].center.x,
+            sdata[i].center.y,
+            sdata[i].center.z,
+            sdata[i].no_pixels,
+            sdata[i].id,
+            sdata[i].red_color);
+        printf("green = ");
+        for (size_t j = 0; j < IMAGE_TIME; j++)
         {
-            const spixel_info& d = data[j * accum_img_size.x + i];
-            printf("i = %d, id = %d, color = %f, x = %f, y = %f, z = %f, no_pix = %d\n",
-                i, d.id, d.red_color, d.center.x, d.center.y, d.center.z, d.no_pixels);
+            printf("%f ", sdata[i].green_color[j]);
         }
         printf("\n");
     }
-
     printf("\n");
 
     return 0;
@@ -512,6 +637,25 @@ int seg_engine_GPU::Test_Enforce_Connectivity()
     {
         total_pixels += clusters[i];
     }
+
+    spixel_map->UpdateHostFromDevice();
+
+    const spixel_info* sdata = spixel_map->GetData(MEMORYDEVICE_CPU);
+    printf("\n");
+    for (size_t i = 0; i < spixel_map->dataSize; i++)
+    {
+        printf("i = %d, xyz = %f %f %f, n = %d, id = %d, red = %f\n",
+            i,
+            sdata[i].center.x,
+            sdata[i].center.y,
+            sdata[i].center.z,
+            sdata[i].no_pixels,
+            sdata[i].id,
+            sdata[i].red_color);
+    }
+    printf("\n");
+
+
 
     free(clusters);
     return 0;

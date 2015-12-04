@@ -20,6 +20,20 @@
 #define BLOCK_DIM		8
 #endif
 
+//#define USE_FAKE_DATA
+
+#ifdef USE_FAKE_DATA
+#define IMAGE_WIDTH 20
+#define IMAGE_HEIGHT 20
+#define IMAGE_DEPTH 5
+#define IMAGE_TIME 10
+#else
+#define IMAGE_WIDTH 120
+#define IMAGE_HEIGHT 120
+#define IMAGE_DEPTH 17
+#define IMAGE_TIME 310
+#endif
+
 namespace gSLICr
 {
 	//------------------------------------------------------

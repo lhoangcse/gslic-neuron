@@ -12,6 +12,7 @@ namespace gSLICr
 			Vector3f center;
 			Vector4f color_info;
             neur red_color;
+            neur green_color[IMAGE_TIME];
 			int id;
 			int no_pixels;
 		};

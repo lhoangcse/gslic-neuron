@@ -5,7 +5,8 @@
 #include "../objects/gSLICr_settings.h"
 #include "../objects/gSLICr_spixel_info.h"
 
-#define AssertExit(cond) if(!cond) { printf("File %s, line %i, assert failed.\n", __FILE__, __LINE__); return -1; }
+#define AssertExitI(cond) if(!cond) { printf("File %s, line %i, assert failed.\n", __FILE__, __LINE__); return -1; }
+#define AssertExitB(cond) if(!cond) { printf("File %s, line %i, assert failed.\n", __FILE__, __LINE__); return false; }
 
 namespace gSLICr
 {

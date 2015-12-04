@@ -71,11 +71,13 @@ _CPU_AND_GPU_CODE_ inline void cvt_img_space_shared(const gSLICr::Vector4u* inim
 }
 
 _CPU_AND_GPU_CODE_ inline void init_cluster_centers_shared(
-    const gSLICr::neur* inimg, gSLICr::objects::spixel_info* out_spixel,
+    const gSLICr::neur* in_img_red, const gSLICr::neur* in_img_green,
+    gSLICr::objects::spixel_info* out_spixel,
     gSLICr::Vector4i map_size, gSLICr::Vector4i img_size, int spixel_size,
     int x, int y, int z)
 {
 	int cluster_idx = z * map_size.x * map_size.y + y * map_size.x + x;
+    int time_step = img_size.x * img_size.y * img_size.z;
 
 	int img_x = x * spixel_size + spixel_size / 2;
 	int img_y = y * spixel_size + spixel_size / 2;
@@ -93,7 +95,11 @@ _CPU_AND_GPU_CODE_ inline void init_cluster_centers_shared(
     out_spixel[cluster_idx].center = 
         gSLICr::Vector3f((float)img_x, (float)img_y, (float)img_z);
 	//out_spixel[cluster_idx].color_info = inimg[img_idx];
-    out_spixel[cluster_idx].red_color = inimg[img_idx];
+    for (int i = 0; i < IMAGE_TIME; i++)
+    {
+        out_spixel[cluster_idx].green_color[i] = in_img_green[img_idx + i * time_step];
+    }
+    out_spixel[cluster_idx].red_color = in_img_red[img_idx];
 	out_spixel[cluster_idx].no_pixels = 0;
 }
 
@@ -103,6 +109,7 @@ _CPU_AND_GPU_CODE_ inline float compute_slic_distance(
     int x, int y, int z, const gSLICr::objects::spixel_info& center_info,
     float weight, float normalizer_xy, float normalizer_color)
 {
+    int t = 0; // time slice index
     float dcolor = fabsf(in_img_red[idx_img] - center_info.red_color);
 
     float dxyz = sqrtf(
@@ -115,15 +122,26 @@ _CPU_AND_GPU_CODE_ inline float compute_slic_distance(
     size_t ctr_img_idx = center_info.center.z * img_size.y * img_size.x +
                          center_info.center.y * img_size.x +
                          center_info.center.x;
-    size_t idx_time = 0;
-    for (int t = 0; t < img_size.w; t++)
+    for (t = 0; t < img_size.w; t++)
     {
-        dt += in_img_green[idx_img + idx_time] * in_img_green[ctr_img_idx + idx_time];
-        idx_time += time_step;
+        dt += in_img_green[idx_img + t * time_step] * center_info.green_color[t];
     }
     dt = 1 - dt;
 
 	float retval = dcolor * normalizer_color + weight * dxyz * normalizer_xy + dt;
+
+    //if (idx_img == 0)
+    //{
+    //    printf("xyz %d %d %d, c-xyz %f %f %f, dcolor %f,dxyz %f,dt %f,retval %f, green ",
+    //        x, y, z, center_info.center.x, center_info.center.y, center_info.center.z,
+    //        dcolor, dxyz, dt, retval);
+    //    for (t = 0; t < img_size.w; t++)
+    //    {
+    //        printf("%f ", center_info.green_color[t]);
+    //    }
+    //    printf("\n");
+    //}
+
 	return retval;
 }
 
@@ -193,10 +211,16 @@ _CPU_AND_GPU_CODE_ inline void finalize_reduction_result_shared(
     gSLICr::Vector4i map_size, int no_blocks_per_spixel, int x, int y, int z)
 {
 	int spixel_idx = z * map_size.y * map_size.x + y * map_size.x + x;
+    size_t t = 0;
+    int no_pixels = 0;
 
 	spixel_list[spixel_idx].center = gSLICr::Vector3f(0, 0, 0);
     spixel_list[spixel_idx].red_color = 0;
 	spixel_list[spixel_idx].no_pixels = 0;
+    for (t = 0; t < IMAGE_TIME; t++)
+    {
+        spixel_list[spixel_idx].green_color[t] = 0;
+    }
 
 	for (int i = 0; i < no_blocks_per_spixel; i++)
 	{
@@ -205,12 +229,22 @@ _CPU_AND_GPU_CODE_ inline void finalize_reduction_result_shared(
 		spixel_list[spixel_idx].center += accum_map[accum_list_idx].center;
         spixel_list[spixel_idx].red_color += accum_map[accum_list_idx].red_color;
 		spixel_list[spixel_idx].no_pixels += accum_map[accum_list_idx].no_pixels;
+        for (t = 0; t < IMAGE_TIME; t++)
+        {
+            spixel_list[spixel_idx].green_color[t] +=
+                accum_map[accum_list_idx].green_color[t];
+        }
 	}
 
 	if (spixel_list[spixel_idx].no_pixels != 0)
 	{
-		spixel_list[spixel_idx].center /= (float)spixel_list[spixel_idx].no_pixels;
-        spixel_list[spixel_idx].red_color /= (float)spixel_list[spixel_idx].no_pixels;
+        no_pixels = spixel_list[spixel_idx].no_pixels;
+        spixel_list[spixel_idx].center /= (float)no_pixels;
+        spixel_list[spixel_idx].red_color /= (float)no_pixels;
+        for (t = 0; t < IMAGE_TIME; t++)
+        {
+            spixel_list[spixel_idx].green_color[t] /= (float)no_pixels;
+        }
     }
 }
 
