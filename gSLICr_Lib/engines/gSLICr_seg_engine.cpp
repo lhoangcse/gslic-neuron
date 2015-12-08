@@ -11,7 +11,7 @@ using namespace gSLICr::engines;
 
 seg_engine::seg_engine(const objects::settings& in_settings)
 {
-	gSLICr_settings = in_settings;
+    gSLICr_settings = in_settings;
 }
 
 
@@ -19,8 +19,8 @@ seg_engine::~seg_engine()
 {
     delete src_img_red;
     delete src_img_green;
-	delete idx_img;
-	delete spixel_map;
+    delete idx_img;
+    delete spixel_map;
 }
 
 void seg_engine::Perform_Segmentation(NeuronImage* in_img_red, NeuronImage* in_img_green)
@@ -28,15 +28,15 @@ void seg_engine::Perform_Segmentation(NeuronImage* in_img_red, NeuronImage* in_i
     src_img_red->SetFrom(in_img_red, ORUtils::MemoryBlock<neur>::CPU_TO_CUDA);
     src_img_green->SetFrom(in_img_green, ORUtils::MemoryBlock<neur>::CPU_TO_CUDA);
     
-	Init_Cluster_Centers();
+    Init_Cluster_Centers();
 
-	Find_Center_Association();
+    Find_Center_Association();
 
-	for (int i = 0; i < gSLICr_settings.no_iters; i++)
-	{
-		Update_Cluster_Center();
+    for (int i = 0; i < gSLICr_settings.no_iters; i++)
+    {
+        Update_Cluster_Center();
 
-		Find_Center_Association();
+        Find_Center_Association();
     }
 
     if (gSLICr_settings.do_enforce_connectivity)

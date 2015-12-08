@@ -5,18 +5,18 @@
 
 namespace gSLICr
 {
-	namespace objects
-	{
-		struct spixel_info
-		{
-			Vector3f center;
-			Vector4f color_info;
+    namespace objects
+    {
+        struct spixel_info
+        {
+            Vector3f center;
+            Vector4f color_info;
             neur red_color;
             neur green_color[IMAGE_TIME];
-			int id;
-			int no_pixels;
-		};
-	}
+            int id;
+            int no_pixels;
+        };
+    }
 
-	typedef ORUtils::Image4D<objects::spixel_info> SpixelMap;
+    typedef ORUtils::Image4D<objects::spixel_info> SpixelMap;
 }

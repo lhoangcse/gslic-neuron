@@ -18,30 +18,30 @@ using namespace cv;
 
 void load_image(const Mat& inimg, gSLICr::UChar4Image* outimg)
 {
-	gSLICr::Vector4u* outimg_ptr = outimg->GetData(MEMORYDEVICE_CPU);
+    gSLICr::Vector4u* outimg_ptr = outimg->GetData(MEMORYDEVICE_CPU);
 
-	for (int y = 0; y < outimg->noDims.y;y++)
-		for (int x = 0; x < outimg->noDims.x; x++)
-		{
-			int idx = x + y * outimg->noDims.x;
-			outimg_ptr[idx].b = inimg.at<Vec3b>(y, x)[0];
-			outimg_ptr[idx].g = inimg.at<Vec3b>(y, x)[1];
-			outimg_ptr[idx].r = inimg.at<Vec3b>(y, x)[2];
-		}
+    for (int y = 0; y < outimg->noDims.y;y++)
+        for (int x = 0; x < outimg->noDims.x; x++)
+        {
+            int idx = x + y * outimg->noDims.x;
+            outimg_ptr[idx].b = inimg.at<Vec3b>(y, x)[0];
+            outimg_ptr[idx].g = inimg.at<Vec3b>(y, x)[1];
+            outimg_ptr[idx].r = inimg.at<Vec3b>(y, x)[2];
+        }
 }
 
 void load_image(const gSLICr::UChar4Image* inimg, Mat& outimg)
 {
-	const gSLICr::Vector4u* inimg_ptr = inimg->GetData(MEMORYDEVICE_CPU);
+    const gSLICr::Vector4u* inimg_ptr = inimg->GetData(MEMORYDEVICE_CPU);
 
-	for (int y = 0; y < inimg->noDims.y; y++)
-		for (int x = 0; x < inimg->noDims.x; x++)
-		{
-			int idx = x + y * inimg->noDims.x;
-			outimg.at<Vec3b>(y, x)[0] = inimg_ptr[idx].b;
-			outimg.at<Vec3b>(y, x)[1] = inimg_ptr[idx].g;
-			outimg.at<Vec3b>(y, x)[2] = inimg_ptr[idx].r;
-		}
+    for (int y = 0; y < inimg->noDims.y; y++)
+        for (int x = 0; x < inimg->noDims.x; x++)
+        {
+            int idx = x + y * inimg->noDims.x;
+            outimg.at<Vec3b>(y, x)[0] = inimg_ptr[idx].b;
+            outimg.at<Vec3b>(y, x)[1] = inimg_ptr[idx].g;
+            outimg.at<Vec3b>(y, x)[2] = inimg_ptr[idx].r;
+        }
 }
 
 bool load_neuron_image(
@@ -116,20 +116,20 @@ int main()
     AssertExitI(red_img_size.y == green_img_size.y);
     AssertExitI(red_img_size.z == green_img_size.z);
 
-	// gSLICr settings
-	gSLICr::objects::settings my_settings;
+    // gSLICr settings
+    gSLICr::objects::settings my_settings;
     my_settings.img_size_green = green_img_size;
     my_settings.img_size_red = red_img_size;
     my_settings.no_segs = 75;
-	my_settings.spixel_size = 16;
-	my_settings.coh_weight = 0.6f;
-	my_settings.no_iters = 5;
-	my_settings.color_space = gSLICr::XYZ; // gSLICr::CIELAB for Lab, or gSLICr::RGB for RGB
+    my_settings.spixel_size = 16;
+    my_settings.coh_weight = 0.6f;
+    my_settings.no_iters = 5;
+    my_settings.color_space = gSLICr::XYZ; // gSLICr::CIELAB for Lab, or gSLICr::RGB for RGB
     my_settings.seg_method = gSLICr::GIVEN_NUM; // or gSLICr::GIVEN_NUM for given number
-	my_settings.do_enforce_connectivity = true; // wheter or not run the enforce connectivity step
+    my_settings.do_enforce_connectivity = true; // wheter or not run the enforce connectivity step
 
-	// instantiate a core_engine
-	gSLICr::engines::core_engine* gSLICr_engine = new gSLICr::engines::core_engine(my_settings);
+    // instantiate a core_engine
+    gSLICr::engines::core_engine* gSLICr_engine = new gSLICr::engines::core_engine(my_settings);
 
     StopWatchInterface *my_timer; sdkCreateTimer(&my_timer);
     

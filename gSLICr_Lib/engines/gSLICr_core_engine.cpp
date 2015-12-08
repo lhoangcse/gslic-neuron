@@ -9,12 +9,12 @@ using namespace std;
 
 gSLICr::engines::core_engine::core_engine(const objects::settings& in_settings)
 {
-	slic_seg_engine = new seg_engine_GPU(in_settings);
+    slic_seg_engine = new seg_engine_GPU(in_settings);
 }
 
 gSLICr::engines::core_engine::~core_engine()
 {
-		delete slic_seg_engine;
+        delete slic_seg_engine;
 }
 
 void gSLICr::engines::core_engine::Process_Frame(NeuronImage* in_img_red, NeuronImage* in_img_green)
@@ -24,5 +24,5 @@ void gSLICr::engines::core_engine::Process_Frame(NeuronImage* in_img_red, Neuron
 
 const IntImage4D * gSLICr::engines::core_engine::Get_Seg_Res()
 {
-	return slic_seg_engine->Get_Seg_Mask();
+    return slic_seg_engine->Get_Seg_Mask();
 }

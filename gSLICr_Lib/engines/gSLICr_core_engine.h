@@ -6,25 +6,25 @@
 
 namespace gSLICr
 {
-	namespace engines
-	{
-		class core_engine
-		{
-		private:
+    namespace engines
+    {
+        class core_engine
+        {
+        private:
 
-			seg_engine* slic_seg_engine;
+            seg_engine* slic_seg_engine;
 
-		public:
+        public:
 
-			core_engine(const objects::settings& in_settings);
-			~core_engine();
+            core_engine(const objects::settings& in_settings);
+            ~core_engine();
 
-			// Function to segment in_img
+            // Function to segment in_img
             void Process_Frame(NeuronImage* in_img_red, NeuronImage* in_img_green);
 
-			// Function to get the pointer to the segmented mask image
-			const IntImage4D * Get_Seg_Res();
-		};
-	}
+            // Function to get the pointer to the segmented mask image
+            const IntImage4D * Get_Seg_Res();
+        };
+    }
 }
 
